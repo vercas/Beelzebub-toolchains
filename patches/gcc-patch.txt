@@ -1,15 +1,15 @@
---- gcc-5.3.0.orig/config.sub	2015-01-02 09:30:21.000000000 +0000
-+++ gcc-5.3.0/config.sub	2016-03-26 22:16:59.412480600 +0000
+--- gcc-5.3.0.orig/config.sub   2015-01-02 09:30:21.000000000 +0000
++++ gcc-5.3.0/config.sub    2016-03-26 22:16:59.412480600 +0000
 @@ -1393,6 +1393,7 @@
- 	      | -os2* | -vos* | -palmos* | -uclinux* | -nucleus* \
- 	      | -morphos* | -superux* | -rtmk* | -rtmk-nova* | -windiss* \
- 	      | -powermax* | -dnix* | -nx6 | -nx7 | -sei* | -dragonfly* \
-+	      | -beelzebub* \
- 	      | -skyos* | -haiku* | -rdos* | -toppers* | -drops* | -es* | -tirtos*)
- 	# Remember, each alternative MUST END IN *, to match a version number.
- 		;;
---- gcc-5.3.0.orig/fixincludes/mkfixinc.sh	2012-10-28 21:42:48.000000000 +0000
-+++ gcc-5.3.0/fixincludes/mkfixinc.sh	2016-03-27 02:35:59.369980000 +0100
+          | -os2* | -vos* | -palmos* | -uclinux* | -nucleus* \
+          | -morphos* | -superux* | -rtmk* | -rtmk-nova* | -windiss* \
+          | -powermax* | -dnix* | -nx6 | -nx7 | -sei* | -dragonfly* \
++         | -beelzebub* \
+          | -skyos* | -haiku* | -rdos* | -toppers* | -drops* | -es* | -tirtos*)
+    # Remember, each alternative MUST END IN *, to match a version number.
+        ;;
+--- gcc-5.3.0.orig/fixincludes/mkfixinc.sh  2012-10-28 21:42:48.000000000 +0000
++++ gcc-5.3.0/fixincludes/mkfixinc.sh   2016-03-27 02:35:59.369980000 +0100
 @@ -11,6 +11,7 @@
  
  # Check for special fix rules for particular targets
@@ -18,8 +18,8 @@
      i?86-*-cygwin* | \
      i?86-*-mingw32* | \
      x86_64-*-mingw32* | \
---- gcc-5.3.0.orig/gcc/config/beelzebub.h	1970-01-01 00:00:00.000000000 +0000
-+++ gcc-5.3.0/gcc/config/beelzebub.h	2016-03-27 12:40:14.281623400 +0100
+--- gcc-5.3.0.orig/gcc/config/beelzebub.h   1970-01-01 00:00:00.000000000 +0000
++++ gcc-5.3.0/gcc/config/beelzebub.h    2016-03-27 19:58:15.864605800 +0100
 @@ -0,0 +1,46 @@
 +/* Useful if you wish to make target-specific gcc changes. */
 +#undef TARGET_BEELZEBUB
@@ -28,7 +28,7 @@
 +/* Default arguments you want when running your
 +   i686-myos-gcc/x86_64-myos-gcc toolchain */
 +// #define LIB_SPEC "-lc" /* link against C standard library */
-+ 
++
 +/* Don't automatically add extern "C" { } around header files. */
 +#undef  NO_IMPLICIT_EXTERN_C
 +#define NO_IMPLICIT_EXTERN_C 1
@@ -67,8 +67,16 @@
 +  %{m32:-m elf_i386} \
 +  %{shared:-shared} \
 +  %{static:-Bstatic}"
---- gcc-5.3.0.orig/gcc/config.gcc	2016-03-24 22:51:44.912907400 +0000
-+++ gcc-5.3.0/gcc/config.gcc	2016-03-27 03:51:26.657235700 +0100
+--- gcc-5.3.0.orig/gcc/config/beelzebub_amd64.h 1970-01-01 00:00:00.000000000 +0000
++++ gcc-5.3.0/gcc/config/beelzebub_amd64.h  2016-03-27 19:58:23.098679200 +0100
+@@ -0,0 +1 @@
++#define LIB_SPEC "-lbeelzebub.amd64"
+--- gcc-5.3.0.orig/gcc/config/beelzebub_ia32.h  1970-01-01 00:00:00.000000000 +0000
++++ gcc-5.3.0/gcc/config/beelzebub_ia32.h   2016-03-27 19:58:32.931119900 +0100
+@@ -0,0 +1 @@
++#define LIB_SPEC "-lbeelzebub.ia32"
+--- gcc-5.3.0.orig/gcc/config.gcc   2016-03-24 22:51:44.912907400 +0000
++++ gcc-5.3.0/gcc/config.gcc    2016-03-27 19:58:02.807320800 +0100
 @@ -598,6 +598,12 @@
  
  # Common parts for widely ported systems.
@@ -87,16 +95,16 @@
  
  case ${target} in
 +i[34567]86-*-beelzebub*)
-+    tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h glibc-stdint.h i386/i386elf.h beelzebub.h"
++    tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h glibc-stdint.h i386/i386elf.h beelzebub.h beelzebub_ia32.h"
 +    ;;
 +x86_64-*-beelzebub*)
-+    tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h glibc-stdint.h i386/i386elf.h i386/x86-64.h beelzebub.h"
++    tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h glibc-stdint.h i386/i386elf.h i386/x86-64.h beelzebub.h beelzebub_amd64.h"
 +    ;;
  aarch64*-*-elf)
- 	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h"
- 	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-elf-raw.h"
---- gcc-5.3.0.orig/libgcc/config.host	2015-10-01 13:01:18.000000000 +0100
-+++ gcc-5.3.0/libgcc/config.host	2016-03-27 13:01:30.937308400 +0100
+    tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h"
+    tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-elf-raw.h"
+--- gcc-5.3.0.orig/libgcc/config.host   2015-10-01 13:01:18.000000000 +0100
++++ gcc-5.3.0/libgcc/config.host    2016-03-27 13:01:30.937308400 +0100
 @@ -322,6 +322,14 @@
  esac
  
@@ -110,10 +118,10 @@
 +    tmake_file="$tmake_file i386/t-crtstuff t-crtstuff-pic t-libgcc-pic"
 +    ;;
  aarch64*-*-elf)
- 	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o"
- 	extra_parts="$extra_parts crtfastmath.o"
---- gcc-5.3.0.orig/libstdc++-v3/configure	2015-11-26 13:51:04.000000000 +0000
-+++ gcc-5.3.0/libstdc++-v3/configure	2016-03-27 02:08:04.603527900 +0100
+    extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o"
+    extra_parts="$extra_parts crtfastmath.o"
+--- gcc-5.3.0.orig/libstdc++-v3/configure   2015-11-26 13:51:04.000000000 +0000
++++ gcc-5.3.0/libstdc++-v3/configure    2016-03-27 02:08:04.603527900 +0100
 @@ -40138,6 +40138,5984 @@
  
      ;;
@@ -217,10 +225,10 @@
 +      glibcxx_ld_is_gold=yes
 +    fi
 +    ldver=`$LD --version 2>/dev/null |
-+	   sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
++      sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
 +
 +    glibcxx_gnu_ld_version=`echo $ldver | \
-+	   $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
++      $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
 +    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_gnu_ld_version" >&5
 +$as_echo "$glibcxx_gnu_ld_version" >&6; }
 +  fi
@@ -234,7 +242,7 @@
 +  else
 +    glibcxx_gcsections_min_ld=21602
 +    if test x"$with_gnu_ld" = x"yes" &&
-+	test $glibcxx_gnu_ld_version -gt $glibcxx_gcsections_min_ld ; then
++   test $glibcxx_gnu_ld_version -gt $glibcxx_gcsections_min_ld ; then
 +      glibcxx_have_gc_sections=yes
 +    fi
 +  fi
@@ -277,10 +285,10 @@
 +      rm -f conftest.c
 +      touch conftest.c
 +      if $CC -c conftest.c; then
-+	if $LD --gc-sections -o conftest conftest.o 2>&1 | \
-+	   grep "Warning: gc-sections option ignored" > /dev/null; then
-+	  ac_gcsections=no
-+	fi
++   if $LD --gc-sections -o conftest conftest.o 2>&1 | \
++      grep "Warning: gc-sections option ignored" > /dev/null; then
++     ac_gcsections=no
++   fi
 +      fi
 +      rm -f conftest.c conftest.o conftest
 +    fi
@@ -391,9 +399,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -453,9 +461,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -520,9 +528,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -582,9 +590,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -649,9 +657,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -711,9 +719,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -899,9 +907,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -961,9 +969,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -1028,9 +1036,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -1090,9 +1098,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -1511,9 +1519,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -1573,9 +1581,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -1640,9 +1648,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -1702,9 +1710,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -1769,9 +1777,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -1831,9 +1839,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -2019,9 +2027,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -2081,9 +2089,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -2632,9 +2640,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -2694,9 +2702,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -2761,9 +2769,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -2823,9 +2831,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -3253,9 +3261,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -3315,9 +3323,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -3503,9 +3511,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -3565,9 +3573,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -3865,9 +3873,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -3927,9 +3935,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -3994,9 +4002,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -4056,9 +4064,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -4244,9 +4252,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -4306,9 +4314,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -4373,9 +4381,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -4435,9 +4443,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -4986,9 +4994,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -5048,9 +5056,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -5115,9 +5123,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -5177,9 +5185,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -5486,9 +5494,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -5548,9 +5556,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -5736,9 +5744,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -5798,9 +5806,9 @@
 +      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 +/* end confdefs.h.  */
 +#include <math.h>
-+		      #ifdef HAVE_IEEEFP_H
-+		      #include <ieeefp.h>
-+		      #endif
++             #ifdef HAVE_IEEEFP_H
++             #include <ieeefp.h>
++             #endif
 +
 +int
 +main ()
@@ -6099,8 +6107,8 @@
    *-aix*)
  
    # If we're not using GNU ld, then there's no point in even trying these
---- gcc-5.3.0.orig/libstdc++-v3/crossconfig.m4	2014-04-22 13:30:59.000000000 +0100
-+++ gcc-5.3.0/libstdc++-v3/crossconfig.m4	2016-03-27 00:55:41.176054100 +0000
+--- gcc-5.3.0.orig/libstdc++-v3/crossconfig.m4  2014-04-22 13:30:59.000000000 +0100
++++ gcc-5.3.0/libstdc++-v3/crossconfig.m4   2016-03-27 00:55:41.176054100 +0000
 @@ -36,6 +36,13 @@
      AM_ICONV
      ;;
