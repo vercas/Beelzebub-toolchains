@@ -188,7 +188,7 @@ for ARCH in $ARCHES; do
     if [ "$ARCH" == "arm" ]; then
         TARGET=arm-eabi
     else
-        TARGET=$ARCH-elf
+        TARGET=$ARCH-beelzebub
     fi
 
     INSTALLPATH=`pwd`/$TARGET-$GCCVER-$OS-$HOSTARCH
@@ -228,21 +228,21 @@ for ARCH in $ARCHES; do
         popd
     fi
 
-    if [ ! -f $GDBBUILDPATH/built.txt ]; then
-        case "$TARGET" in
-            aarch64-elf) EXTRA_TARGETS="--enable-targets=arm-eabi" ;;
-            *) EXTRA_TARGETS="" ;;
-        esac
+    # if [ ! -f $GDBBUILDPATH/built.txt ]; then
+    #     case "$TARGET" in
+    #         aarch64-elf) EXTRA_TARGETS="--enable-targets=arm-eabi" ;;
+    #         *) EXTRA_TARGETS="" ;;
+    #     esac
 
-        echo building gdb
-        mkdir -p $GDBBUILDPATH
-        pushd $GDBBUILDPATH
-        log ../gdb-$GDBVER/configure --target=$TARGET --prefix=$INSTALLPATH --disable-werror $EXTRA_TARGETS
-        log make $PARALLEL
-        log make install
-        touch built.txt
-        popd
-    fi
+    #     echo building gdb
+    #     mkdir -p $GDBBUILDPATH
+    #     pushd $GDBBUILDPATH
+    #     log ../gdb-$GDBVER/configure --target=$TARGET --prefix=$INSTALLPATH --disable-werror $EXTRA_TARGETS
+    #     log make $PARALLEL
+    #     log make install
+    #     touch built.txt
+    #     popd
+    # fi
 done
 
 echo all done
