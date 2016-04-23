@@ -191,7 +191,7 @@ for ARCH in $ARCHES; do
         TARGET=$ARCH-beelzebub
     fi
 
-    INSTALLPATH=`pwd`/$TARGET-$GCCVER-$OS-$HOSTARCH
+    INSTALLPATH=`pwd`/toolchain-$TARGET-$GCCVER-$OS-$HOSTARCH
     BINBUILDPATH=build-binutils-$BINVER-$ARCH-$OS-$HOSTARCH
     GCCBUILDPATH=build-gcc-$GCCVER-$ARCH-$OS-$HOSTARCH
     GDBBUILDPATH=build-gdb-$GDBVER-$ARCH-$OS-$HOSTARCH
@@ -202,7 +202,7 @@ for ARCH in $ARCHES; do
         echo building binutils
         mkdir -p $BINBUILDPATH
         pushd $BINBUILDPATH
-        log ../binutils-$BINVER/configure --target=$TARGET --prefix=$INSTALLPATH --disable-werror
+        log ../binutils-$BINVER/configure --target=$TARGET --prefix=$INSTALLPATH --with-sysroot=$SCRIPTROOT/sysroot --disable-werror
         log $MAKE $PARALLEL
         log $MAKE install
         touch built.txt
@@ -219,7 +219,7 @@ for ARCH in $ARCHES; do
 
         mkdir -p $GCCBUILDPATH
         pushd $GCCBUILDPATH
-        log ../gcc-$GCCVER/configure --target=$TARGET --prefix=$INSTALLPATH --enable-languages=c,c++ $ARCH_OPTIONS --disable-werror
+        log ../gcc-$GCCVER/configure --target=$TARGET --prefix=$INSTALLPATH --with-sysroot=$SCRIPTROOT/sysroot --enable-languages=c,c++ $ARCH_OPTIONS --disable-werror
         log $MAKE all-gcc $PARALLEL
         log $MAKE all-target-libgcc $PARALLEL
         log $MAKE install-gcc

@@ -1,1 +1,13 @@
-archives
+/archives
+
+/toolchain-*
+/build-*
+/binutils-*
+/gcc-*
+/gdb-*
+/gmp-*
+/mpc-*
+/mpfr-*
+
+build.log
+.extracted-stamp
