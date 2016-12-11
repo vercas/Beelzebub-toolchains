@@ -209,7 +209,7 @@ for ARCH in $ARCHES; do
     COMMON_OPTIONS=" --target=$TARGET --prefix=$INSTALLPATH --disable-werror "
 
     if [ "$TARGOS" != "elf" ]; then
-        COMMON_OPTIONS=" --with-sysroot=$SCRIPTROOT/sysroots/$TARGOS " $COMMON_OPTIONS
+        COMMON_OPTIONS=" --with-sysroot=$SCRIPTROOT/sysroots/$TARGOS $COMMON_OPTIONS"
     fi
 
     # Building Binutils
