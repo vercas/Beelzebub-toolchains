@@ -69,6 +69,7 @@ function extract-tool()
     rm -rf $TARGETDIR
     tar xf $ARCHIVES/$TARFILE || exit 1
 
+    PATCH=$PATCHES/$1-patch-$2.txt
 
     if [ -f "$PATCH" ]; then
         log echo patching $1
