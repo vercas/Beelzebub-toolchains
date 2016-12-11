@@ -31,6 +31,8 @@ function help()
     echo "Options"
     echo " -a <arch list>               architectures to build"
     echo "    example: -a 'arm' or -a 'arm i386 x86_64' for multiple"
+    echo " -t <target OS name>          target OS name"
+    echo "    example: elf, beelzebub (default)"
     echo " -c                           use compilation cache (ccache must be installed)"
     echo " -f                           fetch source releases from upstream"
     echo " -h|-?                        display this help message"
@@ -50,7 +52,7 @@ function log()
 
 function extract-tool()
 {
-    #echo "extract-tool " $1 $2 $3 $4
+    #echo "extract-tool " $1 $2 $3
 
     TARFILE=${1}-${2}.tar$3
     TARGETDIR=${1}-${2}
@@ -67,9 +69,10 @@ function extract-tool()
     rm -rf $TARGETDIR
     tar xf $ARCHIVES/$TARFILE || exit 1
 
-    if [ ! -z "$4" ]; then
+
+    if [ -f "$PATCH" ]; then
         log echo patching $1
-        log patch -d $TARGETDIR -p1 < $4 || exit 1
+        log patch -d $TARGETDIR -p1 < $PATCH || exit 1
     fi
 
     touch $TARGETDIR/.extracted || exit 1
@@ -100,10 +103,11 @@ if [ $# == "0" ]; then
     help
 fi
 
-while getopts a:cfhj:q? arg
+while getopts a:t:cfhj:q? arg
 do
     case $arg in
         a ) ARCHES=$OPTARG ;;
+        t ) TARGOS=$OPTARG ;;
         c ) CCACHE=1 ;;
         j ) PARALLEL="-j$OPTARG" ;;
         f ) FETCH=1 ;;
@@ -119,6 +123,10 @@ if [ -z "$ARCHES" ]; then
     echo need to specify architectures to build
     echo ie -a "arm sh"
     exit 1
+fi
+
+if [ -z "$TARGOS" ]; then
+    TARGOS=beelzebub
 fi
 
 if [ -z $(which makeinfo) ]; then
@@ -140,36 +148,36 @@ log echo "ARCHES='$ARCHES' PARALLEL='$PARALLEL' FETCH='$FETCH' CCACHE='$CCACHE'"
 . toolvers
 
 if [ "$FETCH" = "1" ]; then
-    if [ ! -f binutils-$BINVER.tar.bz2 ]; then
+    if [ ! -f $ARCHIVES/binutils-$BINVER.tar.bz2 ]; then
        echo fetching binutils-$BINVER
        log wget -P $ARCHIVES -N $GNU_FTP/binutils/binutils-$BINVER.tar.bz2
     fi
-    if [ ! -f gcc-$GCCVER.tar.bz2 ]; then
+    if [ ! -f $ARCHIVES/gcc-$GCCVER.tar.bz2 ]; then
         echo fetching gcc-$GCCVER
         log wget -P $ARCHIVES -N $GNU_FTP/gcc/gcc-$GCCVER/gcc-$GCCVER.tar.bz2
     fi
-    if [ ! -f gdb-$GDBVER.tar.xz ]; then
+    if [ ! -f $ARCHIVES/gdb-$GDBVER.tar.xz ]; then
         echo fetching gdb-$GDBVER
         log wget -P $ARCHIVES -N $GNU_FTP/gdb/gdb-$GDBVER.tar.xz
     fi
-    if [ ! -f mpfr-$MPFRVER.tar.bz2 ]; then
+    if [ ! -f $ARCHIVES/mpfr-$MPFRVER.tar.bz2 ]; then
         echo fetching mpfr-$MPFRVER
         log wget -P $ARCHIVES -N $GNU_FTP/mpfr/mpfr-$MPFRVER.tar.bz2
     fi
-    if [ ! -f mpc-$MPCVER.tar.gz ]; then
+    if [ ! -f $ARCHIVES/mpc-$MPCVER.tar.gz ]; then
         echo fetching mpc-$MPCVER
         log wget -P $ARCHIVES -N $GNU_FTP/mpc/mpc-$MPCVER.tar.gz
     fi
-    if [ ! -f gmp-$GMPVER.tar.bz2 ]; then
+    if [ ! -f $ARCHIVES/gmp-$GMPVER.tar.bz2 ]; then
         echo fetching gmp-$GMPVER
         log wget -P $ARCHIVES -N $GNU_FTP/gmp/gmp-$GMPVER.tar.bz2
     fi
 fi
 
 if [ ! -f .extracted-stamp ]; then
-    extract-tool binutils $BINVER .bz2 $PATCHES/binutils-patch.txt
-    extract-tool gcc $GCCVER .bz2 $PATCHES/gcc-patch.txt
-    extract-tool gdb $GDBVER .xz $PATCHES/gdb-patch.txt
+    extract-tool binutils $BINVER .bz2
+    extract-tool gcc $GCCVER .bz2
+    extract-tool gdb $GDBVER .xz
     extract-tool gmp $GMPVER .bz2
     extract-tool mpc $MPCVER .gz
     extract-tool mpfr $MPFRVER .bz2
@@ -188,7 +196,7 @@ for ARCH in $ARCHES; do
     if [ "$ARCH" == "arm" ]; then
         TARGET=arm-eabi
     else
-        TARGET=$ARCH-beelzebub
+        TARGET=$ARCH-$TARGOS
     fi
 
     INSTALLPATH=`pwd`/toolchain-$TARGET-$GCCVER-$OS-$HOSTARCH
@@ -197,12 +205,18 @@ for ARCH in $ARCHES; do
     GDBBUILDPATH=build-gdb-$GDBVER-$ARCH-$OS-$HOSTARCH
     export PATH=$INSTALLPATH/bin:$PATH
 
+    COMMON_OPTIONS=" --target=$TARGET --prefix=$INSTALLPATH --disable-werror "
+
+    if [ "$TARGOS" != "elf" ]; then
+        COMMON_OPTIONS=$COMMON_OPTIONS " --with-sysroot=$SCRIPTROOT/sysroots/$TARGOS "
+    fi
+
     # Building Binutils
     if [ ! -f $BINBUILDPATH/built.txt ]; then
         echo building binutils
         mkdir -p $BINBUILDPATH
         pushd $BINBUILDPATH
-        log ../binutils-$BINVER/configure --target=$TARGET --prefix=$INSTALLPATH --with-sysroot=$SCRIPTROOT/sysroot --disable-werror
+        log ../binutils-$BINVER/configure $COMMON_OPTIONS 
         log $MAKE $PARALLEL
         log $MAKE install
         touch built.txt
@@ -219,7 +233,7 @@ for ARCH in $ARCHES; do
 
         mkdir -p $GCCBUILDPATH
         pushd $GCCBUILDPATH
-        log ../gcc-$GCCVER/configure --target=$TARGET --prefix=$INSTALLPATH --with-sysroot=$SCRIPTROOT/sysroot --enable-languages=c,c++ $ARCH_OPTIONS --disable-werror
+        log ../gcc-$GCCVER/configure $COMMON_OPTIONS --enable-languages=c,c++ $ARCH_OPTIONS 
         log $MAKE all-gcc $PARALLEL
         log $MAKE all-target-libgcc $PARALLEL
         log $MAKE install-gcc
@@ -237,7 +251,7 @@ for ARCH in $ARCHES; do
     #     echo building gdb
     #     mkdir -p $GDBBUILDPATH
     #     pushd $GDBBUILDPATH
-    #     log ../gdb-$GDBVER/configure --target=$TARGET --prefix=$INSTALLPATH --disable-werror $EXTRA_TARGETS
+    #     log ../gdb-$GDBVER/configure $COMMON_OPTIONS $EXTRA_TARGETS
     #     log make $PARALLEL
     #     log make install
     #     touch built.txt
